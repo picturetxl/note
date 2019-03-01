@@ -52,7 +52,7 @@ source |路径|
 
 + 取消重复行:如果指定多个列，则只有当多个列组合起来的这个组合不同时，才会起作用，也就是说distinct针对的是全部你选择的列且必须放到列名的最前面
 
-```java
+```sql
 select distinct |列名| from |表名|;
 ```
 
@@ -63,8 +63,6 @@ select prod_name from products limit 5; "最多输出5行
 select prod_name from products limit 5,5;  "从行5开始的5行
 
 ```
-
-
 
 + 排序数据:order by :如果按照多列进行排序，则执行顺序：先按照第一个列排，如果第一列相同，则按第二列排;如果要升序排列某个字段，则在order by 后面的列名后加asc（但是默认的排序就是升序的，所以没啥用），如果要降序排列某个字段，则在order by 后面的列名后加desc
 
@@ -211,6 +209,7 @@ select avg(prod_price) as avg_price
 from products 
 where vend_id =1003;
 ```
+
 [![concat](./photos/avg2.png)]()	
 ```sql
 select avg(distinct prod_price) as avg_price 
@@ -387,10 +386,12 @@ rename table customers2 to customers,
 + 
 [![concat](./photos/view1.png)]()	
 
+
 ```sql
-把table 换成view
+--把table 换成view
 
 ```
+
 + 视图更新的限制：如果视图定义中有以下操作：
 	+ 分组
 	+ 联结
