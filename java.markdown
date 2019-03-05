@@ -18,6 +18,170 @@ ctrl shift h 查找类
 ##细节
 > static final int   MIN_VALUE = 0x80000000;//-2147483648
 > static final int   MAX_VALUE = 0x7fffffff;//
+> 
+> 
+> a=a+b  和a+=b 的区别
+
+```java
+	public static void main(String[] args) {
+		byte a = 127;
+		byte b = 127;
+		a=(byte) (a+b);//必须强制类型转换 否则报错
+//		a+=b;//不报错 += java会自动类型转换
+		System.out.println(a);//-2
+	}
+
+```
+
+> java基本数据类型的字节数
+byte     1字节               
+short    2字节               
+int      4字节               
+long     8字节               
+char     2字节（C语言中是1字节）可以存储一个汉字
+float    4字节               
+double   8字节               
+boolean  false/true(理论上占用1bit,1/8字节，实际处理按1byte处理)   
+
+> 内部类
+
+```java
+
+public class Circle {
+	private double radius;
+	public static int count = 0;
+	public Circle(double radius) {
+		this.radius = radius;
+	}
+	class Draw{ //成员内部类
+		public void drawshape() {
+			double radius = 0 ;//只可以是final
+			System.out.println("drawshape");
+			System.out.println(count); //可以访问静态变量
+			System.out.println(radius); //可以访问成员变量
+		}
+	}
+	
+	static class Paint{ //静态内部类
+		private int color;
+		public Paint(int color) {
+			this.color = color;
+		}
+		public void painter(int color) {
+			System.out.println(color);
+		}
+	}
+	
+	public static void main(String[] args) {
+		Circle circle = new Circle(10);
+		System.out.println(circle.radius);
+		//外部类类名.内部类类名 xxx = 外部类对象名.new 内部类类名()
+		Circle.Draw draw = circle.new Draw();//new 成员内部类
+		draw.drawshape();
+		//外部类类名.内部类类名 xxx = new 外部类类名.内部类类名()
+		Circle.Paint paint = new Circle.Paint(10);//new 静态内部类
+	}
+}
+
+```
+
+> 父类名
+
+```java 
+
+import java.util.Date;
+
+public class Test2 extends Date{
+	public void test() {
+		//super 是Date类 但是getClass是运行时绑定且是final的
+		System.out.println(super.getClass().getName());
+	}
+	public static void main(String[] args) {
+		new Test2().test();//cn.txl.headfirst.ch11.Test2
+		//java.util.Date
+		System.out.println(new Test2().getClass().getSuperclass().getName());
+	}
+}
+
+
+````
+
+> StringBuffer 和 StringBuilder 
+
+```java
+	//A thread-safe, mutable sequence of characters.
+	StringBuffer buffer = new StringBuffer();
+	/**
+	 * 线程不安全的可变字符序列 适合单线程
+	 */
+	StringBuilder builder = new StringBuilder();
+
+```
+
+
+> splite 和 StringTokenizer
+
+```java
+package cn.txl.headfirst.ch11;
+import java.util.StringTokenizer;
+public class TestForStringTokenizer {
+	public static void main(String[] args) {
+		String name = "Harry James  Potter   ";
+		String[] names = name.split("\\s");//\s表示空格 推荐使用spile()
+		/**
+		 * Harry:5
+		 * James:5
+		 * :0
+		 * Potter:6
+		 */
+		for(String s:names){
+			System.out.println(s + ":" + s.length());//最后的空格不会加到数组里面的string中去
+		}
+		
+		StringTokenizer strToken=new StringTokenizer(name);
+		//当有拆分的子字符串时，输出这个字符串
+		/**
+		 * Harry
+		 * James
+		 * Potter
+		 */
+		while(strToken.hasMoreTokens()){
+			System.out.println(strToken.nextToken());
+		}
+	}
+}
+
+```
+
+> return 和 finally
+> finally 在return之后执行
+
+```java
+package cn.txl.headfirst.ch11;
+
+public class TryReturn {
+	public static int test() {
+		int x=1;
+		try {
+			return x;
+		}finally { //在return之后执行，但是return已经返回了 所以 s等于1
+			x=2;
+			System.out.println("test():"+x);//test():2
+		}
+		
+	}
+	/**result:
+	 * test():2
+	 * 1
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		int s = new TryReturn().test();
+		System.out.println(s);//1
+	}
+}
+
+```
 
 **语义不同**
 
@@ -622,5 +786,7 @@ ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("cn/
 
 </web-app> 
 ```
+
+
 
 
