@@ -3,11 +3,11 @@
 **笔记注释说明**
 
 
-##Eclipse使用
-command ／ 注释
-alt ／ 自动提示
-ctrl shift f 规范代码
-ctrl shift h 查找类
+##Eclipse Mac使用
++ command ／ 注释
++ alt ／ 自动提示
++ shift command f 规范代码
++ shift command h 查找类
 
 > 编译运行过程
 [![primitive](./photos/complier.png)]()
@@ -23,10 +23,10 @@ ctrl shift h 查找类
 
 
 ##细节
-> static final int   MIN_VALUE = 0x80000000;//-2147483648
-> static final int   MAX_VALUE = 0x7fffffff;//
-> 
-> 
+> static final int MIN_VALUE=0x80000000;
+> static final int   MAX_VALUE = 0x7fffffff;
+
+---
 > a=a+b  和a+=b 的区别
 
 ```java
@@ -49,6 +49,8 @@ char     2字节（C语言中是1字节）可以存储一个汉字
 float    4字节               
 double   8字节               
 boolean  false/true(理论上占用1bit,1/8字节，实际处理按1byte处理)   
+
+---
 
 > 内部类
 
@@ -642,6 +644,20 @@ String ss = String.copyValueOf(s);
 + Case mapping is based on the Unicode Standard version specified by the {@link java.lang.Character Character} class.  用指向特定的包，类或者一个引用类的成员名的文档的可见文本标签插入在线链接
 +  * @see     java.lang.Object#toString() 
 
+
+
+##流和文件
+
++ 字节流 InputStream OutputStream
+	+ FileInputStream 从文件中读入一个字节
+	+ System.in 从键盘读入
+	+ DataInputStream 二进制读写所有的java的基本类型
+	+ ZipInputStream 以常见的zip格式读写文件
++ 字符流 Reader Writer  Unicode 两个字节的码元
+	+ OutputStreamWriter 将使用选定的字符编码方式，把Unicode字符流转为字节流
+	+ PrintWriter 拥有以文本打印字符串和数字的方法
+
+
 ##Java8
 + Lambda(匿名函数)：为了应对变化的需求，如何做到最懒
 + 流:Java8中的Streams的概念使得Collections的许多方面得以推广，让代码更加易读，并允许并行处理流元素
@@ -652,14 +668,36 @@ String ss = String.copyValueOf(s);
 
 函数式编程：把方法传递给方法，同时也能够返回代码并将其包含在数据结构中
 
+--- 
+
 
 ##Spring
-###DI注入依赖
-装配Bean的方式：
++ spring xml配置文件的头
 
-+ 自动装配
-+ JavaConfig装配
-+ xml装配
+```java
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:c="http://www.springframework.org/schema/c"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans 
+  http://www.springframework.org/schema/context
+  http://www.springframework.org/schema/context/spring-context.xsd
+  http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+</beans>
+```
+
+
++ 装配Bean的方式：
+> 如何选择：
+>> 首先使用自动装配
+>> 有些源码不是由你来维护，而当你需要为这些代码配置bean的时候，使用JavaConfig
+>> 最后，只有当你想要使用便利的xml命名空间，并且在JavaConfig中没有同样的实现时，才使用xml
+	+ 自动装配
+		+
+	+ JavaConfig装配
+	+ xml装配
 不用框架的销毁：
 [![primitive_range](./photos/不用框架的销毁.png)]()
 
@@ -687,6 +725,177 @@ String ss = String.copyValueOf(s);
 
 ##AOP
 面向切面：在运行时，动态地将代码切入到类的指定方法，指定位置上的编程思想
+AOP的本质是在一系列纵向的控制流程中，把那些相同的子流程提取成一个横向的面，这句话应该好理解吧，我们把纵向流程画成一条直线，然把相同的部分以绿色突出，如下图左，而AOP相当于把相同的地方连一条横线，如下图右，这个图没画好，大家明白意思就行。
+
+[![primitive_range](./photos/aop.png)]()
+
+spring 提供四种类型的AOP支持：构建在动态代理基础之上，因此Spring对AOP的支持局限于方法拦截
++ 基于代理的经典SpringAOP  --- 过时了
++ 纯POJO切面
++ @AspectJ注解驱动的切面
++ 注入式AspectJ切面
+
+AOP原理：
++ 最开始：静态代理
+[![primitive_range](./photos/staticproxy.png)]()
+
+> IUserDao
+
+```java
+package blog.staticproxy;
+
+public interface IUserDao {
+	public void save();
+	public void find();
+}
+
+```
+
+
+> UserDao
+
+```java
+package blog.staticproxy;
+/**
+ * 只关注业务逻辑 开启事务 提交事务 等等其他操作不用理会
+ * @author taolun
+ *
+ */
+public class UserDao implements IUserDao{
+
+	public void save() {
+		// TODO Auto-generated method stub
+		System.out.println("模拟用户 保存数据");
+	}
+
+	public void find() {
+		// TODO Auto-generated method stub
+		System.out.println("模拟 查询用户");
+	}
+
+}
+
+
+```
+
+> UserDaoProxy
+
+```java
+package blog.staticproxy;
+/**
+ * 静态代理：所谓静态 其实就是编译时期已经确定
+ * 特点：
+ * 1. 目标对象必须要实现接口
+ * 2. 代理对象，要实现与目标对象一样的接口
+*/
+public class UserDaoProxy implements IUserDao{
+	private IUserDao  target = new UserDao();
+	public void save() {
+		System.out.println("代理操作:开启事务");
+		target.save();
+		System.out.println("代理操作：提交事务");
+	}
+
+	public void find() {
+		// TODO Auto-generated method stub
+		target.find();
+	}
+
+}
+
+```
+
+> Main
+
+```java
+package blog.staticproxy;
+
+public class Main {
+	public static void main(String[] args) {
+		IUserDao proxy = new UserDaoProxy();
+		/**
+		 * 表面上调用的是业务逻辑的方法，实际上是调用代理类的方法
+		 * 代理类做了事务之后，再执行业务逻辑的方法---一种增强
+		 */
+		proxy.save();
+	}
+		
+}
+
+```
+
++ 动态代理：jdk代理
+
+[![primitive_range](./photos/dynamicproxy.png)]()
+
+
+>IUserDao and UserDao 和上面一样
+>ProxyFactory
+
+```java
+package blog.dynamicproxy;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+public class ProxyFactory {
+	private Object target;
+	public ProxyFactory(Object target) {
+		this.target=target;
+	}
+	public Object getProxyInstance() {
+		Object proxy = Proxy.newProxyInstance(target.getClass().getClassLoader(),//目标对象的类加载器
+				target.getClass().getInterfaces(), //目标对象的接口
+				new InvocationHandler() {//匹配目标对象的哪个对象方法被调用
+					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+						String methodName = method.getName();
+						Object result = null;
+						if("find".equals(methodName)) {
+							result = method.invoke(target, args);
+						}else {//目标对象调用save()方法
+							System.out.println("开启事务");
+							result=method.invoke(target,args);//调用目标对象的save方法
+							System.out.println("提交事务");
+						}
+						return result;
+					}
+				});
+		return proxy;
+	}
+}
+
+```
+
+>Main
+
+```java
+package blog.dynamicproxy;
+/**
+ * Spring AOP的实现就是通过这两种动态代理实现的 
+ * 如果一个类实现了接口，那么使用jdk代理
+ * 如果一个类没有实现接口，且不被final修饰，则使用CGLIB代理
+ * 如果一个类既没有实现接口，也被final修饰，那么AOP出现错误
+ * @author taolun
+ *
+ */
+public class Main {
+	public static void main(String[] args) {
+		IUserDao target = new UserDao();
+		//使用jdk生成的动态代理的前提是目标类必须有实现的接口 如果一个类没有实现接口，就不能使用jdk动态代理
+		//而CGLIB代理就是解决这个问题的：原理是通过继承动态生成子类继承目标的方法实现，在运行期动态的在内存中构建一个子类
+		//所以CLGLIB代理的实现前提必须目标类不能被final修饰
+		//JDK 动态生成了一个类去实现接口，隐藏了这个过程：
+		//class $jdkProxy implements IUserDao{}
+		IUserDao proxy = (IUserDao) new ProxyFactory(target).getProxyInstance();
+		proxy.save();
+	}
+}
+
+
+```
+
+
 ##ERROR
 + xml路径
 ```java
